@@ -1,0 +1,61 @@
+<ugens revision="1"> <!-- extension from sc3-plugins -->
+     
+    <!-- all documented -->
+    <ugen name="VBAP">
+        <rate name="audio"/>
+        <rate name="control"/>
+        <arg name="numChans">
+            <doc>
+                the number of output channels
+            </doc>
+        </arg>
+        <arg name="in">
+            <doc>
+                the input to be panne
+            </doc>
+        </arg>
+        <arg name="bufnum">
+            <doc>
+                a buffer or it's bufnum containing data calculated by an instance of VBAPSpeakerArray
+                it's number of channels must correspond to numChans above
+            </doc>
+        </arg>
+        <arg name="azimuth" default="0">
+            <doc>
+                +/- 180° from the medium plane
+            </doc>
+        </arg>
+        <arg name="elevation" default="1">
+            <doc>
+                +/- 90° from the azimuth plane
+            </doc>
+        </arg>
+        <arg name="spread" default="0">
+            <doc>
+                A value from 0-100. When 0, if the signal is panned exactly to a speaker location the signal is only on that speaker.
+                At values higher than 0, the signal will always be on more than one speaker.
+                This can smooth the panning effect by making localisation blur more constant.
+            </doc>
+        </arg>
+    </ugen>
+
+    <ugen name="VBAPSpeakerArray">
+        <rate name="new"/>
+        <arg name="dim">
+            <doc>
+                Number of dimensions in the array, either 2 (ring or partial ring), or 3 (partial or full dome or sphere).
+            </doc>
+        </arg>
+        <arg name="direction">
+            <doc>
+                An Array containing speaker locations in degrees.
+                If dim is 2 this will be an array of azimuth angles,
+                if dim is 3 this will be an array of arrays of [azimuth, elevation] angle pairs.
+                Angles are given in degrees, with azimuth +/- 180 degrees from the median plane (i.e. straight ahead),
+                and elevation +/- 90 degrees from the azimuth plane.
+                The order of the speakers corresponds to the order of the outputs when using a VBAP UGen.
+            </doc>
+        </arg>
+    </ugen>
+
+</ugens>
