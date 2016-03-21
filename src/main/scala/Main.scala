@@ -60,20 +60,20 @@ object Main {
         * Setup rig angles and radius
         * The data loaded in the buffer is used for VBAP
         */
-      val a = VBAPSetup(2, Seq(-60, 60, 120, -120))
+      val a = VBAPSetup(2, Seq(-60, 60, 110, -110), 3.35)
       val b = Buffer.alloc(serv, a.bufferData.size)
       b.setn(a.bufferData)
 
       val hit = SynthDef("KarStrong") {
-        val clk = "clk".kr(1);    val atk = "atk".kr(0.02);  val dec = "dec".kr(0.05);  val del = "del".kr(2)
-        val wet = "wet".kr(0.7);  val rmz = "rmz".kr(0.8);   val dmp = "dmp".kr(0.05);  val amp = "amp".kr(2)
+        val clk = "clk".kr(2);    val atk = "atk".kr(0.02);  val dec = "dec".kr(0.2);  val del = "del".kr(0.05)
+        val wet = "wet".kr(0.2);  val rmz = "rmz".kr(0.9);   val dmp = "dmp".kr(0.05);  val amp = "amp".kr(3)
 
         val ex = Impulse.kr(1*clk)                                                                  //trigger
         val in  = WhiteNoise.ar(Decay2.kr(ex, attack = atk, release = dec))                           //excitation
         val fltrd = RLPF.ar(in, LFNoise0.kr(0.5).madd(400, 1000), LFNoise2.ar(0.5).madd(0.1, 0.8))    //filter
         val sig = CombN.ar(fltrd, 2, LFTri.ar(1).madd(del/2, del))                                    //Comb filter delay w/ cubic interpolation
 
-        WrapOut(FreeVerb.ar(VBAP.ar(4, sig, b.id, LFPulse.kr(1).abs.madd(180, 0)), wet, rmz, dmp)*amp)
+        WrapOut(FreeVerb.ar(VBAP.ar(4, sig, b.id, LFSaw.kr(0.1).madd(90, 90)), wet, rmz, dmp)*amp)
       }
 
       var ss = Synth()
