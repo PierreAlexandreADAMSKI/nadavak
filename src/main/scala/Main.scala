@@ -23,14 +23,6 @@ object Main {
     val receiver = udp.Receiver(conf)
     receiver.connect()
 
-    /**
-      * Setup rig angles and radius
-      * The data loaded in the buffer is used for VBAP
-      */
-    val a = VBAPSetup(2, Seq(-60, 60, -120, 120), 3.35)
-    val b = Buffer.alloc(server, a.bufferData.size)
-    b.setn(a.bufferData)
-
     /** SERVER **/
     val cfg = server.Config()
     cfg.program      = "C:/Program Files (x86)/SuperCollider-3.6.6/scsynth.exe"
@@ -64,23 +56,30 @@ object Main {
     /** GO **/
     server.run(cfg) { serv =>
 
-      /*
+      /**
+        * Setup rig angles and radius
+        * The data loaded in the buffer is used for VBAP
+        */
+      val a = VBAPSetup(2, Seq(-60, 60, 120, -120))
+      val b = Buffer.alloc(serv, a.bufferData.size)
+      b.setn(a.bufferData)
+
       val hit = SynthDef("KarStrong") {
         val clk = "clk".kr(1);    val atk = "atk".kr(0.02);  val dec = "dec".kr(0.05);  val del = "del".kr(2)
         val wet = "wet".kr(0.7);  val rmz = "rmz".kr(0.8);   val dmp = "dmp".kr(0.05);  val amp = "amp".kr(2)
 
-        val ex = Impulse.kr(Seq(0.5*clk,1.25*clk, 1*clk, 0.75*clk))                                   //trigger
+        val ex = Impulse.kr(1*clk)                                                                  //trigger
         val in  = WhiteNoise.ar(Decay2.kr(ex, attack = atk, release = dec))                           //excitation
         val fltrd = RLPF.ar(in, LFNoise0.kr(0.5).madd(400, 1000), LFNoise2.ar(0.5).madd(0.1, 0.8))    //filter
         val sig = CombN.ar(fltrd, 2, LFTri.ar(1).madd(del/2, del))                                    //Comb filter delay w/ cubic interpolation
 
-        WrapOut(FreeVerb.ar(VBAP.ar(4, sig, b.id, LFSaw.kr(1)*180), wet, rmz, dmp)*amp)
-      }*/
+        WrapOut(FreeVerb.ar(VBAP.ar(4, sig, b.id, LFPulse.kr(1).abs.madd(180, 0)), wet, rmz, dmp)*amp)
+      }
 
       var ss = Synth()
       ssa.recv(serv)
-      //var ht = Synth()
-      //hit.recv(serv)
+      var ht = Synth()
+      hit.recv(serv)
 
       /**
         * Upon reception, find relevant case.
@@ -88,13 +87,12 @@ object Main {
         *        header, number of arguments & type
         */
       receiver.action = {
-        // match against a particular message
         case (m@osc.Message("/test", value: Int), s) =>
           println(s"Received: $m")
           if(value == 1) ss = Synth.play(ssa.name)
           if(value == 0) ss.release(3.0)
-          //if(value == 2) ht = Synth.play(hit.name)
-          //if(value == 3) ht.release(2.0)
+          if(value == 2) ht = Synth.play(hit.name)
+          if(value == 3) ht.release(2.0)
 
         case (m@osc.Message("/salle", id: Int, x: Int, y: Int, z: Int), s) =>
           println(s"Received: $m")
