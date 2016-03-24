@@ -24,12 +24,13 @@ object NadaVak extends App {
 
   /** SERVER SETUP **/
   val cfg = server.Config()
-  cfg.program = "/Applications/SuperCollider/SuperCollider.app/Contents/Resources/scsynth"
+  cfg.program = "C:/Program Files (x86)/SuperCollider-3.6.6/scsynth.exe"
   cfg.deviceName = Some("Komplete Audio 6")
   cfg.memorySize = 65536
   cfg.blockSize = 128
   cfg.maxNodes = 2048
   cfg.audioBuffers = 256
+
 
   server.run(cfg) { serv =>
 
@@ -70,6 +71,7 @@ object NadaVak extends App {
       case (m@osc.Message("/salle", id: Int, x: Int, y: Int, z: Int), s) =>
       //println(s"Received: $m")
       //ss.set( "imp" -> id )
+        ht.set( "ele" -> id)
 
       case (m@osc.Message("/objet", id: Int, isActive: Boolean, io: Int), s) =>
 

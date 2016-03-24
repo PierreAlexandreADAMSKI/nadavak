@@ -42,17 +42,20 @@ object MySynths {
     }, SynthDef("glitch-1") {
       val bufId = "buf".kr
 
-      val gate = "gate".kr(0.0)
-      val detune = "detune".kr(64.0)
-      val dshft = "dshft".kr(10.0)
-      val wet = "wet".kr(0.1)
+      val gate    = "gate".kr(0.0)
+      val detune  = "detune".kr(64.0)
+      val detset  = "detset".kr(10.0)
+      val wet     = "wet".kr(0.1)
+
+      val azi = "azi".kr(0.0)
+      val ele = "ele".kr(0.0)
 
       val trg = Dust.kr(2) * 0.1
       val frq = Duty.kr(Drand(Seq(0.5, 0.01, 8.0), inf), Dseq(Seq(40, 30), inf))
-      val fmd = LFPulse.ar(64).madd(detune, dshft) * Decay2.kr(gate, 0.1, 2) * 0.05
+      val fmd = LFPulse.ar(64).madd(detune, detset) * Decay2.kr(gate, 0.1, 2) * 0.05
       val cmd = LFNoise2.kr(4)
       val sig = RLPF.ar(LFSaw.ar(frq + fmd + LFTri.kr(0.2, 270).madd(2, 0)) , cmd.madd(300, 700)).tanh
-      WrapOut(FreeVerb.ar(VBAP.ar(4, sig, bufId), wet) * 0.2)
+      WrapOut(FreeVerb.ar(VBAP.ar(4, sig, bufId, azi, ele), wet) * 0.2)
     }, SynthDef("KarStrong") {
       val bufId = "buf".kr
 
