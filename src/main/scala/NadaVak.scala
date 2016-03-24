@@ -42,35 +42,29 @@ object NadaVak extends App {
     val b = Buffer.alloc(serv, a.bufferData.size)
     b setn a.bufferData
 
-    MySynths.save()
-    //SynthDef.load(path = "src/synths/soundscape-1.scsyndef", serv)
-    //load seams to work but we still have an error
-    //SynthDef.load(path = "src/synths/KarStrong.scsyndef", serv)
+    MySynths.load()
 
     var ss = Synth()
-    val ssa = MySynths.getByName("soundscape-1")
-    ssa recv serv
     var ht = Synth()
-    val hit = MySynths.getByName("KarStrong")
-    hit recv serv
     /**
       * Upon reception, find relevant case.
       * NOTE : the OSC msg must contain the same
       * header, number of arguments & type
       */
+
     receiver.action = {
       // match against a particular message
       case (m@osc.Message("/test", value: Int), s) =>
         //println(s"Received: $m")
         if (value == 1) {
-          ss = Synth.play(ssa.name)
+          ss = Synth.play("soundscape-1")
           println("got 1")
         }
         else if (value == 0) {
           ss release 3.0
           println("got 0")
         }
-        else if (value == 2) ht = Synth.play(hit.name, args = Seq("buf" -> b.id))
+        else if (value == 2) ht = Synth.play("KarStrong", args = Seq("buf" -> b.id))
         else if (value == 3) ht release 2.0
 
       case (m@osc.Message("/salle", id: Int, x: Int, y: Int, z: Int), s) =>

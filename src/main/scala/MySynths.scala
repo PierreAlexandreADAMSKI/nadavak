@@ -12,10 +12,10 @@ import de.sciss.synth.ugen._
   */
 object MySynths {
 
-  var synths = save()
+  var synths = Seq[SynthDef]()
   
-  def save(): Seq[SynthDef] = {
-    Seq(SynthDef("soundscape-1") {
+  def load() = {
+    synths ++= Seq(SynthDef("soundscape-1") {
       //______________args____
       val wet = "wet".kr(0.8) //theses values
       val imp = "imp".kr(0.5) //can be modified
@@ -39,9 +39,8 @@ object MySynths {
       val env = EnvGen.ar(Env.perc(0.6, 6), ex, 2) //AR env
       //_______________output__
       WrapOut(FreeVerb.ar(env * (dl + no), 0.8) * amp) //env applied to noise + wet_klank through reverb
-    }//.write(dir = "src/synths")
-
-    , SynthDef("glitch-1") {
+    })
+    synths ++= Seq(SynthDef("glitch-1") {
       val bufId = "buf".kr
 
       val gate = "gate".kr(0.0)
@@ -55,9 +54,9 @@ object MySynths {
       val cmd = LFNoise2.kr(4)
       val sig = RLPF.ar(LFSaw.ar(frq + fmd + LFTri.kr(0.2, 270).madd(2, 0)) , cmd.madd(300, 700)).tanh
       WrapOut(FreeVerb.ar(VBAP.ar(4, sig, bufId), wet) * 0.2)
-    }//.write(dir = "src/synths")
+    })
 
-    , SynthDef("KarStrong") {
+    synths ++= Seq(SynthDef("KarStrong") {
       val bufId = "buf".kr
 
       val clk = "clk".kr(2.0)
@@ -75,12 +74,11 @@ object MySynths {
       val sig = CombN.ar(fltrd, 2, LFTri.ar(1).madd(del/2, del))                                    //Comb filter delay w/ cubic interpolation
 
       WrapOut(FreeVerb.ar(VBAP.ar(4, sig, bufId, LFSaw.kr(0.1).madd(90, 90)), wet, rmz, dmp)*amp)
-    })//.write(dir = "src/synths")
+    })
 
   }
 
   def getByName(name: String): SynthDef = {
     synths.find(_.name == name).get
   }
-
 }
