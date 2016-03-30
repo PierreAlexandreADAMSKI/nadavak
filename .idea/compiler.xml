@@ -22,9 +22,11 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
+        <module name="nadavak" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="nadavak" target="1.8" />
       <module name="scalatest" target="1.8" />
     </bytecodeTargetLevel>
   </component>
