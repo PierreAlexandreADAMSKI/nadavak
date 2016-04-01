@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ScalaCompilerConfiguration">
-    <profile name="SBT 1" modules="scalatest,nadavak" />
+    <option name="macros" value="true" />
+    <plugins>
+      <plugin path="$PROJECT_DIR$/../../SCALA/paradise_2.11.7-2.1.0-javadoc.jar" />
+    </plugins>
+    <profile name="SBT 1" modules="scalatest" />
+    <profile name="SBT 2" modules="nadavak">
+      <plugins>
+        <plugin path="$USER_HOME$/.ivy2/cache/org.scalamacros/paradise_2.11.7/jars/paradise_2.11.7-2.0.1.jar" />
+      </plugins>
+    </profile>
   </component>
 </project>
