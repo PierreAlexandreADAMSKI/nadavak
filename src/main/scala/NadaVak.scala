@@ -1,13 +1,8 @@
 import java.util.Date
 
 import com.illposed.osc.{OSCMessage, OSCListener, OSCPortIn}
-import de.sciss.osc.Implicits._
-import de.sciss.synth.ugen.VBAPSetup.Polar
-import de.sciss.synth.ugen._
-import de.sciss.{synth, osc}
-import de.sciss.osc._
+import de.sciss.synth
 import de.sciss.synth._
-import Ops._
 
 
 /**
@@ -33,16 +28,16 @@ object NadaVak extends App {
     }
   */
 
-/*
-  /** OSC SETUP **/
-  val udp = osc.UDP
-  val conf = udp.Config()
-  conf.localPort = 57120
-  conf.codec = PacketCodec().doublesAsFloats().booleansAsInts()
-  val receiver = udp.Receiver(conf)
-  receiver.connect()
+  /*
+    /** OSC SETUP **/
+    val udp = osc.UDP
+    val conf = udp.Config()
+    conf.localPort = 57120
+    conf.codec = PacketCodec().doublesAsFloats().booleansAsInts()
+    val receiver = udp.Receiver(conf)
+    receiver.connect()
 
-*/
+  */
   /** SERVER SETUP **/
   val server = synth.Server
   val cfg = server.Config()
@@ -65,10 +60,6 @@ object NadaVak extends App {
       * The data loaded in the buffer is used for VBAP
       */
 
-    val a = VBAPSetup(2, Seq(Polar(-60, 0), Polar(60, 0), Polar(110, 0), Polar(-110, 0), 3.35))
-    val b = Buffer.alloc(serv, a.bufferData.size)
-    b setn a.bufferData
-
     MySynths.load()
 
     var ss = Synth()
@@ -83,12 +74,19 @@ object NadaVak extends App {
     val roomListener = new OSCListener {
       override def acceptMessage(date: Date, oscMessage: OSCMessage): Unit = {
         println("ROOM | addr : " + oscMessage.getAddress + " | args : " + oscMessage.getArguments.toString)
-        port.stopListening()
       }
     }
 
+    val quitListener = new OSCListener {
+      override def acceptMessage(date: Date, oscMessage: OSCMessage): Unit = {
+        println("quit")
+        port.stopListening()
+        serv.quit()
+      }
+    }
     port.addListener("/test", moveListener)
     port.addListener("/salle", roomListener)
+    port.addListener("/quit", quitListener)
     port.startListening()
 
     /*
