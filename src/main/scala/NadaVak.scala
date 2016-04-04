@@ -1,8 +1,13 @@
+import java.util
+import java.util.ArrayList
 import java.util.Date
 
 import com.illposed.osc.{OSCMessage, OSCListener, OSCPortIn}
 import de.sciss.synth
 import de.sciss.synth._
+import Ops._
+import de.sciss.synth.ugen.VBAPSetup
+import de.sciss.synth.ugen.VBAPSetup.Polar
 
 
 /**
@@ -41,8 +46,10 @@ object NadaVak extends App {
   /** SERVER SETUP **/
   val server = synth.Server
   val cfg = server.Config()
-  cfg.program = "/Applications/SuperCollider/SuperCollider.app/Contents/Resources/scsynth"
+  //cfg.program = "/Applications/SuperCollider/SuperCollider.app/Contents/Resources/scsynth"
+  cfg.program      = "C:/Program Files (x86)/SuperCollider-3.6.6/scsynth.exe"
   cfg.deviceName = Some("Komplete Audio 6")
+  //cfg.deviceName   = Some("ASIO : ASIO4ALL v2")
   cfg.memorySize = 65536
   cfg.blockSize = 128
   cfg.maxNodes = 2048
@@ -50,6 +57,10 @@ object NadaVak extends App {
 
   server.run(cfg) { serv =>
 
+    val a     = VBAPSetup(2, Seq(Polar(-90,0), Polar(90,0)), 3.35)
+    val orig  = VBAPSetup.Cartesian(0.0, 0.0, 2.0)
+    val b     = Buffer.alloc(serv, a.bufferData.size)
+    b.setn(a.bufferData)
     /*
       * start debug on parallel thread
     debug.start()
@@ -64,16 +75,26 @@ object NadaVak extends App {
 
     var ss = Synth()
     var ht = Synth()
+    var ru = Synth()
 
     val port = new OSCPortIn(57120)
     val moveListener = new OSCListener {
       override def acceptMessage(date: Date, oscMessage: OSCMessage): Unit = {
         println("TEST | addr : " + oscMessage.getAddress + " | args : " + oscMessage.getArguments.toString)
+        val pos = VBAPSetup.Cartesian(
+          oscMessage.getArguments.get(0).asInstanceOf[util.ArrayList[Float]].get(0).asInstanceOf[Double],
+          oscMessage.getArguments.get(0).asInstanceOf[util.ArrayList[Float]].get(1).asInstanceOf[Double],
+          oscMessage.getArguments.get(0).asInstanceOf[util.ArrayList[Float]].get(2).asInstanceOf[Double])
+        val ang = java.lang.Math.toDegrees(orig.angle(pos))
+        //ru.set( "azi" -> ang )
+        println("POSI | angle : " + ang.toString)
       }
     }
     val roomListener = new OSCListener {
       override def acceptMessage(date: Date, oscMessage: OSCMessage): Unit = {
         println("ROOM | addr : " + oscMessage.getAddress + " | args : " + oscMessage.getArguments.toString)
+        //MySynths.getByName("Rumble").recv(serv)
+        //ru = Synth.play("Rumble", args = Seq("buf" -> b.id))
       }
     }
 

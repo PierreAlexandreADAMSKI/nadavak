@@ -74,7 +74,44 @@ object MySynths {
       val sig = CombN.ar(fltrd, 2, LFTri.ar(1).madd(del/2, del))                                    //Comb filter delay w/ cubic interpolation
 
       WrapOut(FreeVerb.ar(VBAP.ar(4, sig, bufId, LFSaw.kr(0.1).madd(90, 90)), wet, rmz, dmp)*amp)
-    })
+    }, SynthDef( "Rumble" ){
+      val gate    = "gate".kr(0.0)
+      val detune  = "detune".kr(80.0)
+      val detset  = "detset".kr(10.0)
+      val wet     = "wet".kr(0.1)
+      val swp     = "sweep".kr(1.0)
+      val azi     = "azi".kr(0.0)
+      val ele     = "ele".kr(0.0)
+      val bufId   = "buf".kr
+      val amp     = "amp".kr(0.2)
+
+      val trg = Dust.kr(2) * 0.1
+      val frq = Duty.kr(Drand(Seq(0.1, 8.0), inf), Dseq(Seq(50.0, 36.0), inf))
+      val fmd = LFPulse.ar(64).madd(detune, detset) * Decay2.kr(gate, 0.1, swp) * 0.05
+      val cmd = LFNoise2.kr(4)
+      val sig = RLPF.ar(LFSaw.ar(Seq(frq + fmd + LFTri.kr(0.2, 270).madd(2, 0), frq + fmd)) , cmd.madd(300, 700)).tanh
+
+      WrapOut(FreeVerb.ar(VBAP.ar(4, sig, bufId, azi, ele), wet) * amp)
+    }, SynthDef( "LushFB" ) {
+      val frq = "frq".kr(42.0.midicps)
+      val spd = "spd".kr(10.0.reciprocal)
+      val amp = "amp".kr(0.02)
+
+      val top_lay = SinOscFB.ar(Seq( frq,            frq+1,               (frq/2) * 2^(7/12), (frq/2) + 1         ), SinOsc.kr(spd, -1).madd(1.5, 1.5))
+      val bot_lay = SinOscFB.ar(Seq( frq * 2^(7/12), (frq/2)  * 2^(4/12), frq/2,              (frq/2)  * 2^(10/12)), SinOsc.kr(spd, -1).madd(1.5, 1.5))
+      WrapOut(RLPF.ar((top_lay + bot_lay ).tanh, 4000) * amp)
+    }, SynthDef("Sampler") {
+      val buf  = "buf".kr
+      val wet  = "wet".kr(0.5)
+      val grn  = "grn".kr(1)
+      val pch  = "pitch".kr(1)
+      val amp  = "amp".kr(0.1)
+      var rate = BufRateScale.kr(Seq(buf, buf, buf, buf)) * pch
+      //if (grn > 0 ){ rate *= LFNoise0.kr(grn).madd(1, 1.01) }
+      val sig  = PlayBuf.ar(1, buf, rate) * 0.1
+      WrapOut(FreeVerb.ar(sig, wet) * amp)
+    }
+    )
 
   }
 
